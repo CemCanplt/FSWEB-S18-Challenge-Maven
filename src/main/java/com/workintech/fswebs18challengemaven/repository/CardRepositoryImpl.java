@@ -105,11 +105,11 @@ public class CardRepositoryImpl implements CardRepository {
     @Override
     public Card findById(Long id) {
         Card card = entityManager.find(Card.class, id);
-        // **GÜNCELLEME:** Eğer kart bulunamazsa hata fırlat
+
         if (card == null) {
             throw new CardException("Card with ID " + id + " not found", HttpStatus.NOT_FOUND);
         }
-        // **GÜNCELLEME BİTTİ**
+
         return card;
     }
 }
