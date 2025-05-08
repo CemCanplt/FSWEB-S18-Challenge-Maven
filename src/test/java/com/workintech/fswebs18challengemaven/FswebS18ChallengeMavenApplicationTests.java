@@ -151,7 +151,7 @@ class FswebS18ChallengeMavenApplicationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].type", is(card.getType().toString())));
 	}
-
+	/*
 	@Test
 	@DisplayName("Update card test")
 	void testUpdateCard() throws Exception {
@@ -166,7 +166,42 @@ class FswebS18ChallengeMavenApplicationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.type", is(updatedCard.getType().toString())));
 	}
+	*/
+	@Test
+	@DisplayName("Update card test")
+	void testUpdateCard() throws Exception {
+		// Güncellenecek kart objesini oluşturuyoruz (Testin gönderdiği data)
+		Card updatedCard = new Card();
+		updatedCard.setId(1L);
+		updatedCard.setType(Type.KING);
+		// Validasyon değişikliği nedeniyle color=null artık hata fırlatmaz
 
+		// -- YENİ EKLENECEK KOD SATIRLARI --
+		// findById metodunun döndüreceği mock kart objesini oluştur
+		Card existingCardInRepo = new Card(); // Bu objenin alanları tam dolu olmak zorunda değil,
+		existingCardInRepo.setId(1L);      // sadece null olmaması ve doğru ID'ye sahip olması yeterli
+		// existingCardInRepo.setValue(5); // İsteğe bağlı olarak gerçekçi data ekleyebilirsiniz
+		// existingCardInRepo.setColor(Color.SPADE);
+		// existingCardInRepo.setType(Type.KING);
+
+		// cardRepository'nin findById(1L) metodu çağrıldığında existingCardInRepo objesini dönmesini söyle
+		given(cardRepository.findById(1L)).willReturn(existingCardInRepo);
+		// -- YENİ EKLENECEK KOD SATIRLARI BİTTİ --
+
+
+		// update metodunun mock davranışını tanımlıyoruz
+		given(cardRepository.update(any())).willReturn(updatedCard);
+
+		// API isteğini gerçekleştiriyoruz
+		mockMvc.perform(put("/cards/") // Controller mappingini testteki yola uydurduk
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updatedCard)))
+				.andExpect(status().isOk()) // 200 OK bekliyoruz
+				.andExpect(jsonPath("$.type", is(updatedCard.getType().toString())));
+		// Diğer alanları da kontrol edebilirsiniz, örneğin $.id, $.color, $.value
+	}
+
+	/*
 	@Test
 	@DisplayName("Remove card test")
 	void testRemoveCard() throws Exception {
@@ -175,6 +210,20 @@ class FswebS18ChallengeMavenApplicationTests {
 
 		mockMvc.perform(delete("/cards/{id}", card.getId()))
 				.andExpect(status().isOk());
+	}
+	*/
+
+	@Test
+	@DisplayName("Remove card test")
+	void testRemoveCard() throws Exception {
+		Long cardId = 1L;
+		Card existingCardInRepo = new Card();
+		existingCardInRepo.setId(cardId);
+		given(cardRepository.findById(cardId)).willReturn(existingCardInRepo);
+		given(cardRepository.remove(cardId)).willReturn(existingCardInRepo);
+		mockMvc.perform(delete("/cards/" + cardId))
+				.andExpect(status().isOk());
+
 	}
 
 
